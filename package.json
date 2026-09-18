@@ -1,0 +1,164 @@
+{
+  "name": "timecount",
+  "displayName": "TimeCount",
+  "description": "Tracks the time you spend in VS Code. Status bar totals for today, this week, this month and overall, plus a dashboard. Data stays on your computer.",
+  "version": "0.1.0",
+  "publisher": "brahmjot-singh",
+  "author": {
+    "name": "Brahmjot Singh"
+  },
+  "license": "MIT",
+  "icon": "images/icon.png",
+  "galleryBanner": {
+    "color": "#164ea8",
+    "theme": "dark"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "time tracker",
+    "time tracking",
+    "coding time",
+    "productivity",
+    "statistics",
+    "status bar"
+  ],
+  "main": "./src/extension.js",
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": true
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "timecount.openDashboard",
+        "title": "Open Dashboard",
+        "category": "TimeCount",
+        "icon": "$(graph)"
+      },
+      {
+        "command": "timecount.togglePause",
+        "title": "Pause / Resume Tracking",
+        "category": "TimeCount"
+      },
+      {
+        "command": "timecount.exportCsv",
+        "title": "Export Daily Totals as CSV…",
+        "category": "TimeCount"
+      },
+      {
+        "command": "timecount.exportJson",
+        "title": "Export All Data as JSON…",
+        "category": "TimeCount"
+      },
+      {
+        "command": "timecount.openDataFolder",
+        "title": "Open Data Folder",
+        "category": "TimeCount"
+      },
+      {
+        "command": "timecount.resetData",
+        "title": "Reset All Data…",
+        "category": "TimeCount"
+      }
+    ],
+    "configuration": {
+      "title": "TimeCount",
+      "properties": {
+        "timecount.idleTimeoutSeconds": {
+          "type": "number",
+          "default": 180,
+          "minimum": 30,
+          "maximum": 3600,
+          "description": "Seconds without any activity before time stops counting."
+        },
+        "timecount.weekStartsOn": {
+          "type": "string",
+          "enum": [
+            "monday",
+            "sunday",
+            "saturday"
+          ],
+          "default": "monday",
+          "description": "First day of the week."
+        },
+        "timecount.dailyGoalMinutes": {
+          "type": "number",
+          "default": 0,
+          "minimum": 0,
+          "maximum": 1440,
+          "description": "Daily goal in minutes. 0 turns it off."
+        },
+        "timecount.statusBar.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the status bar item."
+        },
+        "timecount.statusBar.items": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "today",
+              "yesterday",
+              "week",
+              "month",
+              "year",
+              "total",
+              "avg",
+              "streak",
+              "session",
+              "goal"
+            ]
+          },
+          "default": [
+            "today",
+            "week",
+            "month",
+            "total",
+            "avg"
+          ],
+          "description": "What to show in the status bar, in order. avg is the average per active day, session is the current work session, streak is consecutive active days."
+        },
+        "timecount.statusBar.alignment": {
+          "type": "string",
+          "enum": [
+            "left",
+            "right"
+          ],
+          "default": "left",
+          "description": "Which side of the status bar to use."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.js\"",
+    "typecheck": "tsc -p jsconfig.json",
+    "test:integration": "node integration/run.js",
+    "vscode:prepublish": "npm run typecheck && npm test",
+    "package": "vsce package --allow-missing-repository"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.5",
+    "@types/vscode": "1.90.0",
+    "@vscode/test-electron": "^3.1.0",
+    "@vscode/vsce": "^4.0.0",
+    "typescript": "^5.9.3"
+  }
+}

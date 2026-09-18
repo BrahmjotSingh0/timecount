@@ -1,0 +1,13 @@
+.vscode/**
+.vscode-test/**
+.kilo/**
+.gitignore
+.gitattributes
+node_modules/**
+test/**
+integration/**
+images/dashboard-*.png
+jsconfig.json
+package-lock.json
+*.vsix
+**/*.map
