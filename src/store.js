@@ -23,6 +23,9 @@ function sleepSync(ms) {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 }
 
+/** Identifies one version of a file. Two quick writes can share a modification time, so size and id are included. */
+const stampOf = (st) => st.mtimeMs + ':' + st.size + ':' + st.ino;
+
 /** Text of a month file -> Map(dayKey -> DayRecord), or null if it is not valid. */
 function parseMonth(text) {
   let raw;
@@ -48,7 +51,7 @@ class Store {
     this.days = new Map();
     /** dayKey -> DayRecord. Only what this window tracked since its last flush. */
     this.pending = new Map();
-    this.mtimes = new Map(); // monthKey -> mtime of the file version we hold
+    this.stamps = new Map(); // monthKey -> stamp of the file version we hold
     this.flushTimer = null;
     this.lastError = null;
     /** False until load() has finished, so callers can avoid showing partial totals. */
@@ -69,18 +72,18 @@ class Store {
         if (!m) return;
         const file = path.join(this.dir, name);
         try {
-          const mtime = (await fs.promises.stat(file)).mtimeMs;
+          const stamp = stampOf(await fs.promises.stat(file));
           const days = parseMonth(await fs.promises.readFile(file, 'utf8'));
-          if (days) loaded.push([m[1], days, mtime]);
+          if (days) loaded.push([m[1], days, stamp]);
           else loaded.push([m[1], ...this._readMonthSync(m[1])]); // slow path: retry, then quarantine
         } catch (err) {
           this.lastError = err;
         }
       }));
-      for (const [mk, days, mtime] of loaded) {
+      for (const [mk, days, stamp] of loaded) {
         // A flush that ran while we were reading is newer than what we read.
-        if (this.mtimes.has(mk)) continue;
-        this._adopt(mk, days, mtime);
+        if (this.stamps.has(mk)) continue;
+        this._adopt(mk, days, stamp);
       }
     } finally {
       this.loaded = true;
@@ -101,58 +104,58 @@ class Store {
       if (!m) continue;
       const mk = m[1];
       seen.add(mk);
-      let mtime;
-      try { mtime = fs.statSync(path.join(this.dir, name)).mtimeMs; } catch { continue; }
-      if (this.mtimes.get(mk) === mtime) continue;
+      let stamp;
+      try { stamp = stampOf(fs.statSync(path.join(this.dir, name))); } catch { continue; }
+      if (this.stamps.get(mk) === stamp) continue;
       try {
-        const [days, mt] = this._readMonthSync(mk);
-        this._adopt(mk, days, mt);
+        const [days, readStamp] = this._readMonthSync(mk);
+        this._adopt(mk, days, readStamp);
         changed = true;
       } catch (err) {
         this.lastError = err;
       }
     }
     // Month files that vanished (another window reset the data).
-    for (const mk of [...this.mtimes.keys()]) {
+    for (const mk of [...this.stamps.keys()]) {
       if (seen.has(mk)) continue;
-      this._adopt(mk, new Map(), 0);
-      this.mtimes.delete(mk);
+      this._adopt(mk, new Map(), '');
+      this.stamps.delete(mk);
       changed = true;
     }
     return changed;
   }
 
   /** Replace what we hold for a month with `days` (disk state) + our own unflushed time. */
-  _adopt(mk, days, mtime) {
+  _adopt(mk, days, stamp) {
     for (const k of [...this.days.keys()]) if (monthKeyOf(k) === mk) this.days.delete(k);
     for (const [k, p] of this.pending) {
       if (monthKeyOf(k) === mk) days.set(k, mergeDay(days.get(k) || newDay(), p));
     }
     for (const [k, d] of days) this.days.set(k, d);
-    if (mtime) this.mtimes.set(mk, mtime);
+    if (stamp) this.stamps.set(mk, stamp);
   }
 
   /**
-   * [days, mtime] for a month, quarantining the file if it stays unreadable.
-   * @returns {[Map<string, import('./model').DayRecord>, number]}
+   * [days, stamp] for a month, quarantining the file if it stays unreadable.
+   * @returns {[Map<string, import('./model').DayRecord>, string]}
    */
   _readMonthSync(mk) {
     const file = this._file(mk);
     for (let attempt = 0; attempt < 2; attempt++) {
-      let text, mtime;
+      let text, stamp;
       try {
-        mtime = fs.statSync(file).mtimeMs;
+        stamp = stampOf(fs.statSync(file));
         text = fs.readFileSync(file, 'utf8');
       } catch (err) {
-        if (err.code === 'ENOENT') return [new Map(), 0];
+        if (err.code === 'ENOENT') return [new Map(), ''];
         throw err;
       }
       const days = parseMonth(text);
-      if (days) return [days, mtime];
+      if (days) return [days, stamp];
       sleepSync(40); // we may have caught another window mid-write
     }
     try { fs.renameSync(file, file + '.corrupt-' + Date.now()); } catch { /* best effort */ }
-    return [new Map(), 0];
+    return [new Map(), ''];
   }
 
   // writing
@@ -256,7 +259,7 @@ class Store {
       try { fs.unlinkSync(tmp); } catch { /* ignore */ }
     }
     for (const k of keys) this.pending.delete(k);
-    this._adopt(mk, days, fs.statSync(file).mtimeMs);
+    this._adopt(mk, days, stampOf(fs.statSync(file)));
   }
 
   /** Run `fn` while holding the shared lock. Returns false if the lock could not be taken. */
@@ -294,7 +297,7 @@ class Store {
     }
     this.pending.clear();
     this.days.clear();
-    this.mtimes.clear();
+    this.stamps.clear();
     this._ensureDir();
     return this._withLock(20, () => {
       for (const name of fs.readdirSync(this.dir)) {

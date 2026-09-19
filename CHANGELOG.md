@@ -7,6 +7,7 @@ All notable changes to TimeCount are listed here, newest first.
 - Time spent reading or waiting with no input (for example while a build or an AI agent runs) now counts, as long as you are active again within the idle timeout. Longer gaps are still not counted.
 - The default idle timeout is now 5 minutes instead of 3.
 - The status bar and dashboard include this waiting time as it happens.
+- Fixed an update from another VS Code window occasionally being missed until the next refresh.
 - Added a link to the source code and issue tracker on GitHub.
 - New README with screenshots, install steps and a table of what counts as time.
 - More search keywords.
