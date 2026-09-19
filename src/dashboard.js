@@ -51,7 +51,7 @@ class Dashboard {
     this.panel.webview.postMessage({
       type: 'data',
       data: {
-        ...dashboardData(this.store.days, Date.now(), cfg),
+        ...dashboardData(this.store.daysWith(this.tracker.held), Date.now(), cfg),
         tracking: state,
         dataDir: this.store.dir,
       },

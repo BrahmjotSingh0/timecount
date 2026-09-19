@@ -40,7 +40,7 @@ const steps = [
 
   ['settings have their documented defaults', async () => {
     const cfg = vscode.workspace.getConfiguration('timecount');
-    assert.strictEqual(cfg.get('idleTimeoutSeconds'), 180);
+    assert.strictEqual(cfg.get('idleTimeoutSeconds'), 300);
     assert.strictEqual(cfg.get('weekStartsOn'), 'monday');
     assert.strictEqual(cfg.get('dailyGoalMinutes'), 0);
     assert.strictEqual(cfg.get('statusBar.enabled'), true);

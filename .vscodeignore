@@ -6,7 +6,8 @@
 node_modules/**
 test/**
 integration/**
-images/dashboard-*.png
+images/**
+!images/icon.png
 jsconfig.json
 package-lock.json
 *.vsix

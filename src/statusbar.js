@@ -73,7 +73,8 @@ class StatusBar {
     this.lastState = state;
 
     const cfg = this.getConfig();
-    const s = summarize(this.store.days, now, cfg);
+    const days = this.store.daysWith(this.tracker.held);
+    const s = summarize(days, now, cfg);
     const icon = state === 'paused' ? '$(debug-pause)' : state === 'active' ? '$(pulse)' : '$(clock)';
     const parts = [];
     // Until history has loaded the totals would be wrong, so only show the icon.
@@ -92,7 +93,7 @@ class StatusBar {
       this.item.backgroundColor = state === 'paused' ? new vscode.ThemeColor('statusBarItem.warningBackground') : undefined;
     }
 
-    const tip = this._tooltip(s, state, now, cfg);
+    const tip = this._tooltip(s, days, state, cfg);
     if (tip.value !== this.lastTip) {
       this.lastTip = tip.value;
       this.item.tooltip = tip;
@@ -100,9 +101,9 @@ class StatusBar {
     this.item.show();
   }
 
-  _tooltip(s, state, now, cfg) {
+  _tooltip(s, days, state, cfg) {
     const week = T.weekStartKey(s.todayKey, cfg.weekStartsOn);
-    const top = topOf(this.store.days, week, s.todayKey);
+    const top = topOf(days, week, s.todayKey);
     const rows = [
       ['Today', fmt(s.today)],
       ['Yesterday', fmt(s.yesterday)],

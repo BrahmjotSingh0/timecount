@@ -208,3 +208,20 @@ test('toJSON includes unsaved time', (t) => {
   assert.equal(out.version, 1);
   assert.equal(out.days['2026-09-18'].total, 5);
 });
+
+test('daysWith shows held time without changing the store', (t) => {
+  const dir = tmpDir(t);
+  const a = open(t, dir);
+  a.add(ts(18, 9, 0, 5), 60, 'app', 'ts');
+  const held = [
+    { ts: ts(18, 9, 1, 5), secs: 60, project: 'app', language: 'ts' },
+    { ts: ts(19, 0, 0, 30), secs: 30, project: 'lib', language: 'py' },
+  ];
+  const days = a.daysWith(held);
+  assert.equal(days.get('2026-09-18').total, 120);
+  assert.equal(days.get('2026-09-18').sessions.length, 1);
+  assert.equal(days.get('2026-09-19').total, 30);
+  assert.equal(a.days.get('2026-09-18').total, 60);
+  assert.equal(a.days.has('2026-09-19'), false);
+  assert.equal(a.daysWith([]), a.days);
+});

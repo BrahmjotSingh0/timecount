@@ -1,35 +1,80 @@
-# TimeCount
+<p align="center">
+  <img src="images/icon.png" alt="TimeCount" width="96">
+</p>
 
-Tracks how much time you spend in VS Code. The status bar shows today, this week, this month, your total and your daily average, and a dashboard has the details. Everything is stored on your own computer. There is no account and nothing is sent anywhere.
+<h1 align="center">TimeCount</h1>
+
+<p align="center">
+  See how much time you spend in VS Code, right in the status bar.<br>
+  Everything stays on your computer.
+</p>
+
+<p align="center">
+  <a href="https://marketplace.visualstudio.com/items?itemName=brahmjot-singh.timecount"><img alt="Marketplace version" src="https://flat.badgen.net/vs-marketplace/v/brahmjot-singh.timecount?label=marketplace&color=blue"></a>
+  <img alt="Works with VS Code 1.90 or newer" src="https://img.shields.io/badge/VS%20Code-1.90%2B-2b7de9">
+  <a href="https://github.com/BrahmjotSingh0/timecount/blob/HEAD/LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-2b7de9"></a>
+  <img alt="Your data stays on your computer" src="https://img.shields.io/badge/data-stays%20local-2b7de9">
+</p>
+
+![TimeCount dashboard open in VS Code](images/vscode-dashboard.png)
+
+## Install
+
+Open the Extensions view in VS Code (`Ctrl+Shift+X`), search for **TimeCount** and click Install. You can also install it from the [Marketplace page](https://marketplace.visualstudio.com/items?itemName=brahmjot-singh.timecount), or from a terminal:
+
+```
+code --install-extension brahmjot-singh.timecount
+```
+
+There is nothing to set up. It starts counting as soon as VS Code starts. It needs VS Code 1.90 or newer.
 
 ## Status bar
 
-By default it shows Today, Week, Month, Total and Avg. Hover over it for more: yesterday, this year, best day, streak, sessions, and your top project and language this week. Click it to open the dashboard.
+![Status bar showing today, week, month, total and average time](images/statusbar.png)
 
-You can change what it shows with the `timecount.statusBar.items` setting. The options are `today`, `yesterday`, `week`, `month`, `year`, `total`, `avg`, `streak`, `session` and `goal`.
+By default it shows **Today**, **Week**, **Month**, **Total** and **Avg** (your average per day). Hover over it to see yesterday, this year, your best day, your streak, today's sessions and your top project and language this week. Click it to open the dashboard.
+
+Choose what it shows with the `timecount.statusBar.items` setting: `today`, `yesterday`, `week`, `month`, `year`, `total`, `avg`, `streak`, `session` and `goal`.
 
 ## Dashboard
 
 Open it from the status bar or with **TimeCount: Open Dashboard**.
 
-- Today so far, compared with your usual day, and progress towards an optional daily goal
+- Today so far, compared with your usual day, with an optional daily goal
 - Today's sessions on a timeline
 - Yesterday, this week, this month, this year, all time, daily average, average session, best day, longest session and streak
 - A heatmap of the last 12 months
 - Time per day, week or month, time of day, day of week, projects and languages, for the last 7 days, 30 days, 90 days, 1 year or all time
 - A Tables view that shows the same numbers as tables
 
-## How time is counted
+![Charts in the dashboard: time of day, day of week, projects and languages](images/dashboard-charts.png)
 
-Time counts while the VS Code window is focused and you are doing something in it: typing, moving the cursor, scrolling, switching files, saving, using the terminal. It keeps counting for a few minutes after your last input (3 by default), so reading code still counts, and then it stops. Switching to another app stops it straight away. If the computer goes to sleep, that gap is not counted.
+It follows your VS Code theme, light or dark.
 
-Each bit of time is filed under a project (the workspace folder of the file you are in) and a language (the language of that file). Time when no editor is focused, such as in the terminal, is listed as "No editor".
+![Dashboard in a light theme](images/vscode-dashboard-light.png)
 
-To leave something out, pause tracking with **TimeCount: Pause / Resume Tracking**.
+## What counts as time
 
-## Where the data is kept
+TimeCount counts time while the VS Code window is in front of you. A file does not need to be open. Time in the terminal, a chat panel, the settings or the dashboard counts too, and is listed under "No editor" instead of a language.
 
-In JSON files, one per month, in the extension's global storage folder. **TimeCount: Open Data Folder** opens it. On Windows that is `%APPDATA%\Code\User\globalStorage\<publisher>.timecount`.
+| What is happening | Counted |
+| --- | --- |
+| Typing, moving the cursor, scrolling, saving, using the terminal | Yes |
+| Reading or waiting with no input, for less than 5 minutes (a build, an AI agent, a long file) | Yes |
+| No activity for more than 5 minutes | No, that stretch is dropped |
+| VS Code is open but another app is in front | No |
+| The computer is asleep | No |
+| Tracking is paused | No |
+
+The 5 minutes is the `timecount.idleTimeoutSeconds` setting. Lower it for a stricter count, or raise it if you often wait on long tasks.
+
+Each bit of time is filed under a project (the workspace folder of the file you are in) and a language (the language of that file). To leave something out, pause tracking with **TimeCount: Pause / Resume Tracking**.
+
+## Your data
+
+Everything is calculated and stored on your computer. The extension has no network code, and the dashboard cannot load anything from the internet.
+
+Time is kept in JSON files, one per month, in the extension's global storage folder. **TimeCount: Open Data Folder** opens it. On Windows that is `%APPDATA%\Code\User\globalStorage\brahmjot-singh.timecount`.
 
 A day looks like this:
 
@@ -45,13 +90,13 @@ A day looks like this:
 
 Times are in seconds. `hours` is the time spent in each hour of the day, and each session is `[start, end, active seconds]` with Unix timestamps. Only dates, seconds, folder names and language names are stored. No file names, file contents or keystrokes.
 
-If you have several VS Code windows open they share the same folder. Only the focused window counts time, and each window merges what it tracked into the files instead of overwriting them.
+If several VS Code windows are open they share the same folder. Only the focused window counts time, and each window merges what it tracked into the files instead of overwriting them.
 
 ## Settings
 
 | Setting | Default | |
 | --- | --- | --- |
-| `timecount.idleTimeoutSeconds` | `180` | Seconds without activity before time stops counting (30 to 3600). |
+| `timecount.idleTimeoutSeconds` | `300` | Seconds without activity after which you count as away (30 to 3600). |
 | `timecount.weekStartsOn` | `monday` | `monday`, `sunday` or `saturday`. |
 | `timecount.dailyGoalMinutes` | `0` | Daily goal in minutes. `0` turns it off. |
 | `timecount.statusBar.enabled` | `true` | Show the status bar item. |
@@ -67,12 +112,26 @@ If you have several VS Code windows open they share the same folder. Only the fo
 - **TimeCount: Open Data Folder**
 - **TimeCount: Reset All Data…**
 
-## Notes
+## Questions
 
-- It works in remote windows (SSH, WSL, containers). The extension runs on your local machine, so all your time ends up in one place.
-- It does not work in VS Code for the Web, because it needs to write files.
-- To move your history to another computer, copy the data folder while VS Code is closed.
-- It needs VS Code 1.90 or newer.
+**Why does it show less than the clock says?**
+It only counts time when VS Code is in front of you, and it drops stretches of more than 5 minutes with no activity. It also starts counting when VS Code starts, not before.
+
+**Does it work with remote windows (SSH, WSL, containers)?**
+Yes. The extension runs on your local machine, so all your time ends up in one place.
+
+**Does it work in VS Code for the Web?**
+No, because it needs to write files.
+
+**How do I move my history to another computer?**
+Copy the data folder to the same place on the other computer while VS Code is closed.
+
+**How do I delete my data?**
+Run **TimeCount: Reset All Data…**, or delete the data folder.
+
+## Feedback
+
+Found a bug or have an idea? [Open an issue](https://github.com/BrahmjotSingh0/timecount/issues). See the [changelog](CHANGELOG.md) for what changed in each version.
 
 ## Development
 

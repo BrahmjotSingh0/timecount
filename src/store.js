@@ -167,6 +167,22 @@ class Store {
     this._scheduleFlush(FLUSH_MS);
   }
 
+  /** The days as they will look once `ticks` (time the tracker is holding back) is counted. */
+  daysWith(ticks) {
+    if (!ticks.length) return this.days;
+    const days = new Map(this.days);
+    const copied = new Set();
+    for (const t of ticks) {
+      const key = dayKey(t.ts);
+      if (!copied.has(key)) {
+        days.set(key, mergeDay(newDay(), days.get(key) || newDay()));
+        copied.add(key);
+      }
+      record(days.get(key), Math.floor(t.ts / 1000), t.secs, new Date(t.ts).getHours(), t.project, t.language);
+    }
+    return days;
+  }
+
   _dayIn(map, key) {
     let d = map.get(key);
     if (!d) map.set(key, (d = newDay()));

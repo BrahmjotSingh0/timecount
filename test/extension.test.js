@@ -167,6 +167,22 @@ test('status bar updates and time is saved on blur', async (t) => {
   assert.match(statusText(fake), /^\$\(clock\)/);
 });
 
+test('quiet time shows in the status bar while it is held', async (t) => {
+  const { fake, ext, context, dir } = boot(t);
+  await ext.activate(context);
+  fake.api.window.state = { focused: true, active: false };
+  fake.events.windowState.fire(fake.api.window.state);
+  ticks(6); // 30 s counted straight away
+  ticks(12); // 60 s more with no input: held back, but still shown
+  assert.match(statusText(fake), /Today 1m/);
+  const saved = () => JSON.parse(fs.readFileSync(monthFile(dir), 'utf8')).days['2026-09-18'].total;
+  assert.equal(saved(), 30, 'the periodic save wrote the counted part, not the held part');
+  // Leaving the window counts the rest, so it is written.
+  fake.api.window.state = { focused: false, active: false };
+  fake.events.windowState.fire(fake.api.window.state);
+  assert.equal(saved(), 90);
+});
+
 test('periodic save', async (t) => {
   const { fake, ext, context, dir } = boot(t);
   await ext.activate(context);
