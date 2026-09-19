@@ -11,6 +11,7 @@
 
 <p align="center">
   <a href="https://marketplace.visualstudio.com/items?itemName=brahmjot-singh.timecount"><img alt="Marketplace version" src="https://flat.badgen.net/vs-marketplace/v/brahmjot-singh.timecount?label=marketplace&color=blue"></a>
+  <a href="https://github.com/BrahmjotSingh0/timecount/actions/workflows/ci.yml"><img alt="Tests" src="https://img.shields.io/github/actions/workflow/status/BrahmjotSingh0/timecount/ci.yml?branch=main&label=tests"></a>
   <img alt="Works with VS Code 1.90 or newer" src="https://img.shields.io/badge/VS%20Code-1.90%2B-2b7de9">
   <a href="https://github.com/BrahmjotSingh0/timecount/blob/HEAD/LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-2b7de9"></a>
   <img alt="Your data stays on your computer" src="https://img.shields.io/badge/data-stays%20local-2b7de9">
@@ -129,7 +130,9 @@ Copy the data folder to the same place on the other computer while VS Code is cl
 **How do I delete my data?**
 Run **TimeCount: Reset All Data…**, or delete the data folder.
 
-## Feedback
+## Contributing
+
+Bug reports, ideas and pull requests are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) explains how to get set up, and please read the [code of conduct](CODE_OF_CONDUCT.md). To report a security problem privately, see [SECURITY.md](SECURITY.md).
 
 Found a bug or have an idea? [Open an issue](https://github.com/BrahmjotSingh0/timecount/issues). See the [changelog](CHANGELOG.md) for what changed in each version.
 
